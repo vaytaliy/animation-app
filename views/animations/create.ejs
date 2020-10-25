@@ -1,0 +1,18 @@
+<%- include("../partials/header-nonav") %>
+
+<form action="/animations/new" method="POST">
+    <input type="text" name="animation[name]" placeholder="Animation name" required="true" minlength="1" maxlength="20">
+    <input type="text" name="animation[description]" placeholder="Short description">
+    <select name="category">
+        <% categories.forEach(item => {%>
+            <option value="<%=item.name%>"><%=item.name%></option>
+        <%}) %>
+    </select>
+    <div>Save draft and get to editing</div>
+    <button>Submit</button>
+
+</form>
+
+
+
+<%- include("../partials/footer") %>

@@ -1,0 +1,71 @@
+<%- include("../partials/header-nonav") %> <%- include("../partials/navTitle")
+%> <% if (error && error != '') {%>
+<h4 class="alert alert-danger"><%=error%></h4>
+<% } %>
+<div class="container mt-4 form-container">
+  <div class="d-flex justify-content-center">
+    <form
+      action="/register"
+      method="POST"
+      class="d-flex flex-column justify-content-center needs-validation form"
+      id="registrationForm"
+    >
+      <input type="hidden" name="_csrf" value="<%=csrfToken%>" />
+      <div class="form-row">
+        <label for="">Username</label>
+        <input
+          type="text"
+          name="username"
+
+          value="<%=username%>"
+          class="form-control"
+          id="username"
+        />
+        <div class="invalid-feedback">Invalid name format, example "jerry_14" "monst8r_a1"</div>
+        <div class="valid-feedback"></div>
+      </div>
+      <div class="form-row">
+        <label for="">Email</label>
+        <input
+          type="email"
+          name="email"
+
+          class="form-control"
+          value="<%=email%>"
+          id="emailInput"
+          novalidate
+        />
+        <div class="invalid-feedback">Incorrect email format</div>
+        <div class="valid-feedback"></div>
+      </div>
+      <div class="form-row">
+        <label for="">Password</label>
+        <input
+          type="password"
+          id="originalPass"
+          name="password"
+
+          class="form-control"
+        />
+        <div class="invalid-feedback">Password's length must be between 5 and 50</div>
+        <div class="valid-feedback"></div>
+      </div>
+      <div class="form-row">
+        <label for="">Confirm password</label>
+        <input
+          type="password"
+          id="repeatedPassword"
+          name="repeatedPassword"
+
+          class="form-control"
+        />
+        <div class="invalid-feedback">Passwords don't match</div>
+        <div class="valid-feedback"></div>
+      </div>
+      <button id="submitButton" class="btn btn-info my-3">Sign in</button>
+    </form>
+  </div>
+</div>
+<script src="/formValidations.js"></script>
+<!-- <script src="/passmismatch.js"></script> -->
+<%- include("../partials/footer") %>

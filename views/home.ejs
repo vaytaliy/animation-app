@@ -1,0 +1,189 @@
+<%- include("./partials/header") %> <% if (info && info != '') {%>
+<h3 class="alert alert-info"><%=info%></h3>
+<% } %> <% if (error && error != '') {%>
+<h3 class="alert alert-danger"><%=error%></h3>
+<% } %> <% if (user && !user.verified) {%>
+<h3 class="alert alert-info">
+  <span
+    >Current email is not verified, follow this <a href="/verify">link</a> if
+    you want to get access to features including creating animations</span
+  >
+</h3>
+<%}%>
+
+<div class="container" id="animationContainer">
+  <h3 class="save-alert bottom"></h3>
+  <div class="row">
+    <div class="col-12 col-md-9 center-element">
+      <% if (animations) { %> <% animations.forEach(animation => {%>
+      <div class="card mb-4">
+        <div class="card-body">
+          <div class="d-flex flex-row title-box justify-content-between align-items-center">
+            <div class="card-head align-self-center m-1">
+                 <a href="animations/view/<%=animation.id%>" class="alert-link view-anim-link">
+                <h4 class="card-title my-0"><%=animation.name%></h4> 
+                </a>   
+            </div>
+            <div class="animation-category align-self-start m-1"><%=animation.category.name%></div>
+          </div>
+          <div class="thumbnail-container">
+          <img
+            class="card-image"
+            src="<%=animation.thumbnail%>"
+            alt="animation thumbnail"
+            data-id="<%=animation.id%>"
+            data-speed="<%=animation.speed%>"
+            data-frames=""
+            data-thumbnail="<%=animation.thumbnail%>"
+            draggable="false"
+          />
+          <div class="spinner-border loader hidden text-success">
+          </div>
+        </div>
+          <hr />
+          <div class="guessForm">
+            <!--Use this address for fetch <form action="#/guess/<%=animation.id%>?_method=PUT" method="PUT"></form> -->
+            <div class="form-group center-element">
+              <button class="btn btn-sm btn-info guess-button">Guess!</button>
+              <!-- <div class="my-1 guess-attempt-result">Uh oh you didnt guess</div> -->
+              <input type="text" class="guess-input my-4 p-0" />
+            </div>
+          </div>
+          <div class="animation-description my-2"><%=animation.description%></div>
+          <hr />
+          <div class="d-flex flex-row justify-content-between align-items-center">
+            <div class="bolded-small">
+              <img class="profile-picture-sm" draggable="false" src="/images/default-avatar.png"></img>
+              <%=animation.creator.name%>
+              </div>
+            <div class="date" data-date="<%=animation.draftDate%>"></div>
+    
+          </div>
+          <hr />
+          <div class="d-flex justify-content-end arrowContainer">
+            <div class="dislikeClick d-flex align-items-center" data-id="<%=animation.id%>">
+            <object class="arrow dislike <%=animation.disliked%>"  data="/images/down-arrow.svg" type="image/svg+xml"></object>
+          </div>
+            <div class="likes m-2"><%=animation.likes%></div>
+            <div class="likeClick d-flex align-items-center" data-id="<%=animation.id%>">
+            <object class="arrow like <%=animation.liked%>"  data="/images/down-arrow.svg" type="image/svg+xml"></object>
+          </div>
+          </div>
+        </div>
+      </div>
+      <%})%> <% } %>
+      <nav aria-label="Page navigation" class="pagination my-2">
+        <ul class="pagination">
+          <li class="page-item">
+            <a class="page-link" href="/animations?page=1">First</a>
+          </li>
+          <% if (pagination.previousPage >= 1) {%>
+          <li class="page-item">
+            <a
+              class="page-link"
+              href="/animations?page=<%=pagination.previousPage%>"
+              >Previous</a
+            >
+          </li>
+          <% } else {%>
+          <li class="page-item disabled">
+            <a
+              class="page-link"
+              href="/animations?page=<%=pagination.previousPage%>"
+              >Previous</a
+            >
+          </li>
+          <% } %> <% if (pagination.currentPage == 1){ %>
+          <li class="page-item active"><a class="page-link" href="">1</a></li>
+          <% if (pagination.lastPage > 1) {%>
+          <li class="page-item">
+            <a
+              class="page-link"
+              href="/animations?page=<%=pagination.nextPage%>"
+              >2</a
+            >
+          </li>
+          <% } %> <% if (pagination.lastPage > 2) {%>
+          <li class="page-item">
+            <a
+              class="page-link"
+              href="/animations?page=<%=pagination.afterNextPage%>"
+              >3</a
+            >
+          </li>
+          <% } %> <% } else if (pagination.currentPage > 1 &&
+          pagination.currentPage < pagination.lastPage) { %>
+          <li class="page-item">
+            <a
+              class="page-link"
+              href="/animations?page=<%=pagination.previousPage%>"
+              ><%=pagination.previousPage%></a
+            >
+          </li>
+          <li class="page-item active">
+            <a class="page-link" href=""><%=pagination.currentPage%></a>
+          </li>
+          <li class="page-item">
+            <a
+              class="page-link"
+              href="/animations?page=<%=pagination.nextPage%>"
+              ><%=pagination.nextPage%></a
+            >
+          </li>
+          <% } else if (pagination.currentPage == pagination.lastPage) {%> <% if
+          (pagination.beforePreviousPage > 0) { %>
+          <li class="page-item">
+            <a
+              class="page-link"
+              href="/animations?page=<%=pagination.beforePreviousPage%>"
+              ><%=pagination.beforePreviousPage%></a
+            >
+          </li>
+          <% } %> <% if (pagination.previousPage > 0) { %>
+          <li class="page-item">
+            <a
+              class="page-link"
+              href="/animations?page=<%=pagination.previousPage%>"
+              ><%=pagination.previousPage%></a
+            >
+          </li>
+          <% } %>
+          <li class="page-item active">
+            <a class="page-link" href=""><%=pagination.currentPage%></a>
+          </li>
+          <% } %> <% if (pagination.nextPage > pagination.lastPage) {%>
+          <li class="page-item disabled">
+            <a
+              class="page-link"
+              href="/animations?page=<%=pagination.nextPage%>"
+              >Next</a
+            >
+          </li>
+          <% } else {%>
+          <li class="page-item">
+            <a
+              class="page-link"
+              href="/animations?page=<%=pagination.nextPage%>"
+              >Next</a
+            >
+          </li>
+          <% } %>
+          <li class="page-item">
+            <a
+              class="page-link"
+              href="/animations?page=<%=pagination.lastPage%>"
+              >Last</a
+            >
+          </li>
+        </ul>
+      </nav>
+    </div>
+  </div>
+</div>
+
+<script src="/notification.js"></script>
+<script src="/ratePost.js"></script>
+<script src="/imageLoad.js"></script>
+<script src="/dateParser.js"></script>
+<script src="/playAnimation.js"></script>
+<%- include("./partials/footer") %>

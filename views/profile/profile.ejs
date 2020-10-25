@@ -1,0 +1,38 @@
+<%- include("../partials/header") %>
+
+<h1>Profile page!</h1>
+
+<div class="container">
+  <div class="row">
+    <div class="col-10 created-content-group">
+      <% animations.forEach(animation => { %>
+
+      <div class="created-content-item">
+        <span><%=animation.name%> </span>
+        <span><%=animation.category%> </span>
+        <span><%=animation.isFileHeavy%> </span>
+        <span><%=animation.isDraft%> </span>
+        <span data-draftDate="<%=animation.draftDate%>" class="date"> </span>
+     <% if (user) {%>
+        <a href="" class="btn btn-sm btn-danger delete-btn">Del</a>
+        <a href="/animations/<%=animation.animationId%>" class="btn btn-sm btn-success edit-btn">Edit</a>
+     <% } %>
+      </div>
+
+      <% }) %>
+    </div>
+    <nav aria-label="Page navigation" class="pagination my-2">
+      <ul class="pagination">
+        <li class="page-item"><a class="page-link" href="/profile/<%=pageId%>?page=<%=pagination.previousPage%>">Previous</a></li>
+        <li class="page-item active"><a class="page-link" href="/profile/<%=pageId%>?page=<%=pagination.currentPage%>"><%=pagination.currentPage%></a></li>
+        <li class="page-item"><a class="page-link" href="/profile/<%=pageId%>?page=<%=pagination.nextPage%>"><%=pagination.nextPage%></a></li>
+        <li class="page-item"><a class="page-link" href="/profile/<%=pageId%>?page=<%=pagination.secondToNextPage%>"><%=pagination.secondToNextPage%></a></li>
+        <li class="page-item"><a class="page-link" href="/profile/<%=pageId%>?page=<%=pagination.nextPage%>">Next</a></li>
+      </ul>
+    </nav>
+  </div>
+  </div>
+  
+
+<script src="/dateParser.js"></script>
+<%- include("../partials/footer") %>

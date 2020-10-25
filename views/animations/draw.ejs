@@ -1,0 +1,144 @@
+<%- include("../partials/header-nonav") %>
+<meta
+  name="viewport"
+  content="width=device-width, initial-scale=1, maximum-scale=1"
+/>
+
+<body>
+  <h3 class="save-alert"></h3>
+  <div class="empty-spacing"></div>
+  <div class="container">
+    <div class="row my-2">
+        <div class="col-lg-4">
+          <button data-save-draft id="saveEverything" class="btn btn-sm btn-info">Save draft</button>
+          <button data-modal-target="#modalGlobal" class="btn btn-sm btn-info">Global settings</button>
+        </div>
+        <div class="col-lg-3">
+          <span class="small-text">Total size: <span id="drawingSize"></span> /8 Mb (max)</span>
+        </div>
+        <div class="modal-window" id="modalGlobal">
+          <div class="global-modal-head">
+            <span class="modal-head-content">Global drawing settings</span>
+            <button data-close-modal class="close-icon">&times;</button>
+          </div>
+          <div class="global-modal-body">
+            Lorem ipsum dolor sit amet consectetur, adipisicing elit. Suscipit,
+            aliquid necessitatibus deserunt maiores mollitia est cumque sint
+            reprehenderit rerum error?
+          </div>
+          <div>
+            <button data-close-modal id="saveGlobalChanges">Close</button>
+            <button id="closeGlobalModal" data-close-modal data-save-draft>
+              Save draft and close
+            </button>
+            <button id="closeGlobalModal" data-close-modal>
+              Save and post!
+            </button>
+          </div>
+        </div>
+        <div id="overlay"></div>
+    </div>
+    <div class="row">
+      <div class="col">
+        <div class="parent-container" id="parentContainer">
+          <div id="canvasContainer">
+            <canvas id="canvas" width="600" height="400"></canvas>
+
+            <img id="image" src="" alt="" draggable="false" />
+          </div>
+        </div>
+        <div
+          id="playbackMenu"
+          class="d-flex justify-content-around align-items-center"
+        >
+          <input
+            type="range"
+            id="animationPlaybackSlider"
+            min="1"
+            max="1"
+            value="1"
+          />
+          <span class="small-text">
+            Frame:
+            <input
+              type="text"
+              id="frameSelector"
+              value="1"
+              readonly="readonly"
+              class="small-text"
+            />
+            <button id="nextFrame">+</button>
+            <button id="previousFrame">-</button>
+          </span>
+          <button id="animationPlay" class="btn btn-sm btn-info">Play</button>
+        </div>
+        <div id="moveToolContainer"></div>
+        <div class="small-text">
+          Speed
+          <input type="range" min="1" max="100" value="6" id="sliderFrames" />
+          <!-- Default value is constant of 6 -->
+          <span class="small-text"
+            ><span id="fps" class="small-text"></span> FPS
+            <button id="increaseSpeed">+</button>
+            <button id="decreaseSpeed">-</button>
+          </span>
+          <label for="" class="small-text">Move</label><input type="checkbox" id="moveTool" />
+        </div>
+      </div>
+      
+      <div class="col">
+        <h4 class="section-head">Color collection</h4>
+        <div id="colorCollection"></div>
+        <button id="removeColor" class="btn btn-sm btn-info my-2">Remove Selected</button>
+        <h4 class="section-head">Toolbar</h4>
+        <hr class="my-2">
+        <div>
+          <button id="undo" class="btn btn-sm btn-info">Undo</button>
+          <button id="redo" class="btn btn-sm btn-info">Redo</button>
+          <label for="">Hide background</label
+          ><input type="checkbox" id="hideBackground" />
+          <button id="copyFrame" class="btn btn-sm btn-info">Copy current frame</button>
+        </div>
+
+        <div class="slidecontainer">
+          Brush size
+          <input type="range" min="1" max="100" value="8" id="slider" />
+        </div>
+        <div class="wheel" id="colorWheelDemo"></div>
+        <button id="addToCollection" class="btn btn-sm btn-info my-2">Add to collection</button>
+        <button id="giveWhite" class="btn btn-sm btn-info my-2">Give me white</button>
+
+          <h4 class="section-head">Clipboard</h4>
+          <div id="drawClipboard"></div>
+
+
+          <button id="pasteFrame">Paste frame</button>
+          <button id="removeFrame">Remove frame</button>
+
+      </div>
+    </div>
+    <div class="row mt-4">
+      <div class="col-sm-4">
+        
+      </div>
+      <div class="col">
+        
+      </div>
+    </div>
+  </div>
+
+  <form
+    id="saveForm"
+    action="/animations/<%=animation._id%>?_method=PUT"
+    method="PUT"
+  >
+    <input type="hidden" id="hiddenData" name="hidden" />
+  </form>
+
+  <input id="animationData" type="hidden" value="<%=animation%>" />
+  <script src="/modal.js"></script>
+  <script src="/irojs-master/dist/iro.js"></script>
+  <script src="/scratchpad.js"></script>
+
+  <%- include("../partials/footer") %>
+</body>
