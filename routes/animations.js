@@ -121,19 +121,146 @@ router.get('/animations/:id', middleware.loginRequired, middleware.animationBelo
 router.put('/animations/:id', middleware.loginRequired, middleware.animationBelongsToUser, async (req, res) => {
     console.log("current user" + req.user + ":" + req.userId);
     console.log("hit correctly")
+
+
+    let foundAnimation;
     try {
-        await Animation.findByIdAndUpdate({ _id: req.params.id }, {
-            $set: {
-                frames: req.body.frames,
-                coverFrame: req.body.thumbnail,
-                playSpeed: req.body.playSpeed,
-                clipboard: req.body.clipboard,
-                colorCollections: req.body.colorCollections
-            }
-        })
-        return res.json({ message: 'Draft saved successfully', type: 'success' });
+        foundAnimation = await Animation.findByIdAndUpdate({ _id: req.params.id });
+        if (!foundAnimation.isDraft) {
+            return res.json({ message: 'Posted animation can not be updated', type: 'error' });
+        }
     } catch (err) {
-        return res.json({ message: 'Failed saving draft, try again', type: 'error' });
+        return res.json({ message: 'Error updating animation, given ID does not exist', type: 'error' });
+    }
+
+    const UPLOAD_RULES = {
+        PLAY_SPEED_MIN: 0.1,
+        PLAY_SPEED_MAX: 24,
+        COLOR_COLLECTIONS_MIN: 0,
+        COLOR_COLLECTIONS_MAX: 50,
+        CLIPBOARD_MIN: 0,
+        CLIPBOARD_MAX: 20,
+        MAX_SIZE_PREMIUM: 16,
+        MAX_SIZE_STANDARD: 8,
+        HEAVY_FILE_MB: 5,
+        VALID_COLOR_HEX: /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})/,
+        GUESS_STRING_RULE: /\w{1,50}/g
+    }
+
+    const frames = req.body.frames;
+    const playSpeed = req.body.playSpeed;
+    let colorCollections = req.body.colorCollections;
+    let clipboard = req.body.clipboard;
+
+    let totalDrawingSize = 0; //total drawing size in Megabytes
+
+    //constraint controls:
+
+    const isValidFileSize = () => {
+        totalDrawingSize = frames.reduce((total, frame) => { return total + (new TextEncoder().encode(frame)).length / 1000000 });
+        if (req.user.isPremium) {
+            return UPLOAD_RULES.MAX_SIZE_PREMIUM > totalSize ? true : false;
+        }
+        return UPLOAD_RULES.MAX_SIZE_STANDARD > totalSize ? true : false;
+    }
+
+    const isHeavy = () => {
+        return totalDrawingSize > UPLOAD_RULES.HEAVY_FILE_MB ? true : false;
+    }
+
+    const goodGuessString = () => {
+        if (req.body.guessString) {
+            if (req.body.guessString.match(UPLOAD_RULES.GUESS_STRING_RULE)[0]) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    const goodColorHex = () => {
+        for (color of colorCollections) {
+            if (!color.match(UPLOAD_RULES.VALID_COLOR_HEX)[0]) {
+                colorCollections = [];
+            }
+        }
+        return;
+    }
+
+    const hasMoreThanOneFrame = () => {
+        if (req.body.frames.length <= 1) {
+            return false;
+        }
+        return true;
+    }
+
+    const handleClipboardLimit = () => {
+        if (clipboard.length < UPLOAD_RULES.CLIPBOARD_MIN || clipboard.length > UPLOAD_RULES.CLIPBOARD_MAX) {
+            clipboard = [];
+        }
+        return;
+    }
+
+    const goodPlaySpeed = () => {
+        if (playSpeed < UPLOAD_RULES.PLAY_SPEED_MIN || playSpeed > UPLOAD_RULES.PLAY_SPEED_MAX) {
+            return false;
+        }
+        return true;
+    }
+
+    const handleColorsLimit = () => {
+        if (colorCollections.length < UPLOAD_RULES.COLOR_COLLECTIONS_MIN || colorCollections.length > UPLOAD_RULES.COLOR_COLLECTIONS_MAX) {
+            colorCollections = [];
+        }
+        return;
+    }
+
+    if (!isValidFileSize) {
+        return res.json({ message: `Error saving. The animation is too big ${totalDrawingSize} Mb`, type: 'error' });
+    }
+    if (!goodGuessString) {
+        return res.json({ message: `Error saving. The guess word is too long/short/contains illegal symbols`, type: 'error' });
+    }
+    if (!hasMoreThanOneFrame) {
+        return res.json({ message: 'Failed saving draft. Please create more than 1 frame', type: 'error' });
+    }
+    if (!goodPlaySpeed) {
+        return res.json({ message: 'The speed set for animation contains incorrect value', type: 'error' });
+    }
+
+    const trimReceivedParameters = () => {
+        goodColorHex(); // checking if array of hex colors is good values, otherwise empty the array
+        handleClipboardLimit();
+        handleColorsLimit(); // splice clipboard limit and color limit to handle the error better instead of removing everything;
+    }
+    trimReceivedParameters();
+    //updates necessary for draft version only
+
+    Object.assign(foundAnimation, {
+        frames: req.body.frames,
+        coverFrame: req.body.thumbnail,
+        playSpeed: req.body.playSpeed,
+        clipboard: clipboard,
+        colorCollections: colorCollections,
+        draftDate: new Date().getTime()
+    })
+    foundAnimation.save();
+    if (req.query.post && req.query.post == '1') {
+        Object.assign(foundAnimation, {
+            isDraft: false,
+            postDate: new Date().getTime(),
+            isFileHeavy: isHeavy(),
+            needsGuessing: req.body.needsGuessing || false,
+            guessString: req.body.guessString || ''
+        })
+        foundAnimation.save();
+        try {
+            return res.json({ message: 'The animation has been posted. Further changes wont take effect', type: 'success' });
+        } catch (err) {
+            console.log('error posting animation');
+            return res.json({ message: 'Error posting animation', type: 'error' });
+        }
+    } else {
+        return res.json({ message: 'Draft saved successfully', type: 'success' });
     }
 });
 

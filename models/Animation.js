@@ -18,15 +18,12 @@ const AnimationSchema = new mongoose.Schema({
     name: { type: String, required: true },
     discardedByAdmin: { type: Boolean, default: false },
     description: { type: String },
-    guessString: { type: [String] },
+    guessString: { type: String },
     congratulationsMessage: { type: String },
-    guesses: [
-        {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "Guess"
-        }
-    ],
-    allowedGuesses: { type: Number },
+    totalGuessed: {type: Number, default: 0},
+    totalNotGuessed: {type: Number, default: 0},
+    allowedGuesses: { type: Number, default: 3 },
+    needsGuessing: {type: Boolean, default: true},
     category: { type: mongoose.Schema.Types.ObjectId, ref: "Category" },
     adminComment: { type: String },
     isOfficial: { type: Boolean, default: false },
