@@ -8,35 +8,69 @@
   <h3 class="save-alert"></h3>
   <div class="empty-spacing"></div>
   <div class="container">
-    <div class="row my-2">
-        <div class="col-lg-4">
-          <button data-save-draft id="saveEverything" class="btn btn-sm btn-info">Save draft</button>
-          <button data-modal-target="#modalGlobal" class="btn btn-sm btn-info">Global settings</button>
+    <div class="row my-2 mb-5"> 
+      <div class="col-lg-4">
+        <button data-save-draft id="saveEverything" class="btn btn-sm btn-info">
+          Save draft
+        </button>
+        <button data-modal-target="#modalGlobal" class="btn btn-sm btn-info">
+          Global settings
+        </button>
+      </div>
+      <div class="col-lg-3">
+        <span class="small-text"
+          >Total size: <span id="drawingSize"></span> /8 Mb (max)</span
+        >
+      </div>
+      <div class="col-lg-3">
+        <button class="btn btn-sm btn-success">Post</button>
+      </div>
+      <div class="modal-window p-3" id="modalGlobal">
+        <button data-close-modal class="close-icon">&times;</button>
+        <div class="global-modal-head">
+          <span class="modal-head-content">Global drawing settings</span>   
         </div>
-        <div class="col-lg-3">
-          <span class="small-text">Total size: <span id="drawingSize"></span> /8 Mb (max)</span>
+        <div class="global-modal-body">
+          
         </div>
-        <div class="modal-window" id="modalGlobal">
-          <div class="global-modal-head">
-            <span class="modal-head-content">Global drawing settings</span>
-            <button data-close-modal class="close-icon">&times;</button>
+        <div class="my-2 form-box">
+          <div class="form-group">
+            <div class="form-check">
+              
+              <input
+                type="checkbox"
+                id="mustBeGuessed"
+                class="form-check-input"
+              />
+              <label for="" class="form-check-label">Must be guessed</label>
+            </div>
           </div>
-          <div class="global-modal-body">
-            Lorem ipsum dolor sit amet consectetur, adipisicing elit. Suscipit,
-            aliquid necessitatibus deserunt maiores mollitia est cumque sint
-            reprehenderit rerum error?
+          <div class="form-group">
+            <label for="">Secret word</label>
+            <input type="text" id="secretWord" class="form-control" />
           </div>
-          <div>
-            <button data-close-modal id="saveGlobalChanges">Close</button>
-            <button id="closeGlobalModal" data-close-modal data-save-draft>
-              Save draft and close
-            </button>
-            <button id="closeGlobalModal" data-close-modal>
-              Save and post!
-            </button>
+          <div class="form-group">
+            <label for="">Guess attempts</label>
+            <input type="text" id="maxGuessAttempts" class="form-control" />
+          </div>
+          <div class="form-group">
+            <label for="">Secret congratulation message</label>
+            <input
+              type="text"
+              id="congratulationMessage"
+              class="form-control"
+            />
           </div>
         </div>
-        <div id="overlay"></div>
+        <div class="d-flex align-items-start flex-wrap">
+          <button data-close-modal id="saveGlobalChanges" class="btn btn-info">Close</button>
+          <button id="saveDraftClose" class="btn btn-info" data-close-modal data-save-draft>
+            Save draft and close
+          </button>
+          <button id="saveAndPost" class="btn btn-success" data-close-modal>Save and post!</button>
+        </div>
+      </div>
+      <div id="overlay"></div>
     </div>
     <div class="row">
       <div class="col">
@@ -82,22 +116,27 @@
             <button id="increaseSpeed">+</button>
             <button id="decreaseSpeed">-</button>
           </span>
-          <label for="" class="small-text">Move</label><input type="checkbox" id="moveTool" />
+          <label for="" class="small-text">Move</label
+          ><input type="checkbox" id="moveTool" />
         </div>
       </div>
-      
+
       <div class="col">
         <h4 class="section-head">Color collection</h4>
         <div id="colorCollection"></div>
-        <button id="removeColor" class="btn btn-sm btn-info my-2">Remove Selected</button>
+        <button id="removeColor" class="btn btn-sm btn-info my-2">
+          Remove Selected
+        </button>
         <h4 class="section-head">Toolbar</h4>
-        <hr class="my-2">
+        <hr class="my-2" />
         <div>
           <button id="undo" class="btn btn-sm btn-info">Undo</button>
           <button id="redo" class="btn btn-sm btn-info">Redo</button>
           <label for="">Hide background</label
           ><input type="checkbox" id="hideBackground" />
-          <button id="copyFrame" class="btn btn-sm btn-info">Copy current frame</button>
+          <button id="copyFrame" class="btn btn-sm btn-info">
+            Copy current frame
+          </button>
         </div>
 
         <div class="slidecontainer">
@@ -105,25 +144,23 @@
           <input type="range" min="1" max="100" value="8" id="slider" />
         </div>
         <div class="wheel" id="colorWheelDemo"></div>
-        <button id="addToCollection" class="btn btn-sm btn-info my-2">Add to collection</button>
-        <button id="giveWhite" class="btn btn-sm btn-info my-2">Give me white</button>
+        <button id="addToCollection" class="btn btn-sm btn-info my-2">
+          Add to collection
+        </button>
+        <button id="giveWhite" class="btn btn-sm btn-info my-2">
+          Give me white
+        </button>
 
-          <h4 class="section-head">Clipboard</h4>
-          <div id="drawClipboard"></div>
+        <h4 class="section-head">Clipboard</h4>
+        <div id="drawClipboard"></div>
 
-
-          <button id="pasteFrame">Paste frame</button>
-          <button id="removeFrame">Remove frame</button>
-
+        <button id="pasteFrame" class="btn btn-sm btn-info">Paste frame</button>
+        <button id="removeFrame" class="btn btn-sm btn-info">Remove frame</button>
       </div>
     </div>
     <div class="row mt-4">
-      <div class="col-sm-4">
-        
-      </div>
-      <div class="col">
-        
-      </div>
+      <div class="col-sm-4"></div>
+      <div class="col"></div>
     </div>
   </div>
 

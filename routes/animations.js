@@ -234,17 +234,16 @@ router.put('/animations/:id', middleware.loginRequired, middleware.animationBelo
     }
     trimReceivedParameters();
     //updates necessary for draft version only
-
-    Object.assign(foundAnimation, {
-        frames: req.body.frames,
-        coverFrame: req.body.thumbnail,
-        playSpeed: req.body.playSpeed,
-        clipboard: clipboard,
-        colorCollections: colorCollections,
-        draftDate: new Date().getTime()
-    })
+        Object.assign(foundAnimation, {
+            frames: req.body.frames,
+            coverFrame: req.body.thumbnail,
+            playSpeed: req.body.playSpeed,
+            clipboard: clipboard,
+            colorCollections: colorCollections,
+            draftDate: new Date().getTime()
+        })
     foundAnimation.save();
-    if (req.query.post && req.query.post == '1') {
+    if (req.query && req.query.post && req.query.post == '1') {
         Object.assign(foundAnimation, {
             isDraft: false,
             postDate: new Date().getTime(),

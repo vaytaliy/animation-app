@@ -348,7 +348,7 @@ nav {
   z-index: 5;
   background-color: white;
   width: 600px;
-  max-width: 70%;
+  max-width: 90%;
 }
 
 .modal-window.active {
@@ -488,14 +488,13 @@ nav {
 
 .arrow.like.pressed,
 .arrow.dislike.pressed {
-  filter: invert(59%) sepia(91%) saturate(1830%) hue-rotate(349deg) brightness(95%) contrast(110%);
+  filter: invert(59%) sepia(91%) saturate(1830%) hue-rotate(349deg)
+    brightness(95%) contrast(110%);
 }
 
 .arrow.like {
   transform: rotate(180deg);
 }
-
-
 
 :not(svg.IroWheelHue) {
   pointer-events: none;
@@ -505,13 +504,14 @@ nav {
 .likes,
 img {
   user-select: none;
-        -moz-user-select: none;
-        -khtml-user-select: none;
-        -webkit-user-select: none;
-        -o-user-select: none;
+  -moz-user-select: none;
+  -khtml-user-select: none;
+  -webkit-user-select: none;
+  -o-user-select: none;
 }
 
-.likeClick, .dislikeClick {
+.likeClick,
+.dislikeClick {
   z-index: 20;
 }
 
@@ -554,14 +554,15 @@ img {
 .logo-main {
   height: 45px;
   width: 45px;
-  filter: invert(100%) sepia(0%) saturate(0%) hue-rotate(311deg) brightness(102%) contrast(105%);
+  filter: invert(100%) sepia(0%) saturate(0%) hue-rotate(311deg)
+    brightness(102%) contrast(105%);
 }
 
 .form-container {
   animation: form-move 500ms ease-in-out;
 }
 
-@keyframes form-move{
+@keyframes form-move {
   0% {
     transform: translateY(-50%);
     opacity: 0;
@@ -595,4 +596,49 @@ nav.pagination {
 
 .valid-feedback.hidden {
   display: none;
+}
+
+.form-box {
+  width: 200px;
+}
+
+#saveAndPost {
+  margin-left: auto;
+}
+
+#saveGlobalChanges {
+  margin-right: 14px;
+}
+
+#saveDraftClose {
+  margin-right: 14px;
+}
+
+@media (max-width: 574px) {
+  #saveAndPost {
+    margin-left: 0;
+    /* margin-top: 14px; */
+  }
+}
+
+@media (max-width: 671px) {
+  #saveDraftClose {
+    margin-top: 14px;
+    width: 100%;
+    margin-right: 0;
+  }
+  #saveAndPost {
+    margin-top: 14px;
+    width: 100%;
+  }
+  #saveGlobalChanges {
+    width: 100%;
+    margin: 0;
+  }
+}
+
+.close-icon {
+  position: absolute;
+  right: 0;
+  top: 0;
 }

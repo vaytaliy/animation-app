@@ -6,6 +6,7 @@
 function init() {
     const animationData = document.getElementById("animationData").value;
     const animation = JSON.parse(animationData);
+    const originalFrames = animation.frames;
 
     const BRUSH_SIZE = 8,
         SELECTED_COLOR = "#000000",
@@ -27,6 +28,17 @@ function init() {
         history: [],
         size: 0
     }
+
+    function putOriginalIntoHistory() {
+
+        for (let i = 0; i < drawing.frames.length; i++) {
+            drawing.history[i] = {
+                histData: [drawing.frames[i]],
+                entryPoint: 1
+            }
+        }
+    }
+    putOriginalIntoHistory();
 
     function checkDrawingSize() {
 
@@ -473,16 +485,11 @@ function init() {
                     let chosenFrame = parseInt(document.getElementById("frameSelector").value);
                     let historyData = drawing.history[chosenFrame - 1].histData
                     let currentEntryPoint = drawing.history[chosenFrame - 1].entryPoint
-
-                    if (historyData.length != 0 && currentEntryPoint >= 0) {
+                    console.log(currentEntryPoint);
+                    if (historyData.length != 0 && currentEntryPoint > 0) {
                         drawing.frames[chosenFrame - 1] = drawing.history[chosenFrame - 1].histData[currentEntryPoint - 1]
                         drawing.history[chosenFrame - 1].entryPoint -= 1
-                        if (!historyData[currentEntryPoint - 1]) {
-                            renderBlankPage(chosenFrame - 1)
-                        }
-                        else {
-                            renderImage(drawing.frames[chosenFrame - 1])
-                        }
+                        renderImage(drawing.frames[chosenFrame - 1])
                     }
                 })
 
