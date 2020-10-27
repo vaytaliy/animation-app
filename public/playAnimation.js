@@ -8,7 +8,7 @@ function init() {
 
     //making requests only when no content is loaded
 
-    animationThumbnailContainer.addEventListener('pointerup', async (e) => {
+    animationThumbnailContainer.addEventListener('click', async (e) => {
         if (e.target.classList.contains('card-image')) {
             if (e.target.dataset.frames.length == 0) {
                 let loader = e.target.parentElement.querySelector('.loader');

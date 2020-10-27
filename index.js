@@ -71,11 +71,12 @@ catch (err) {
     console.log('unable to connect to db ' + err.message)
 }
 
+
+
 app.use(authRoutes);
 app.use(animationRoutes);
 app.use(profileRoutes);
 
-
-app.listen(8080, '192.168.0.107', () => {
+app.listen(process.env.PORT, process.env.HOST, () => {
     console.log('listening on port')
 })

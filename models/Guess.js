@@ -1,8 +1,10 @@
 const mongoose = require('mongoose');
 
 const guessSchema = new mongoose.Schema({
-    guesserId: {type: mongoose.Schema.Types.ObjectId, ref: "User"},
-    animationId: {type: mongoose.Schema.Types.ObjectId, ref: "Animation"},
+    guesserId: {type: String},
+    animationId: {type: String},
+    finished: {type: Boolean, default: false},
+    hasWon: {type: Boolean, default: false},
     usedAttempts: {type: Number, default: 0}
 });
 

@@ -41,15 +41,18 @@
           </div>
         </div>
           <hr />
-          <% if (animation.needsGuessing) { %>
+          <% if (animation.needsGuessing && !animation.hasGuessedTheAnimation) { %>
           <div class="guessForm">
             <!--Use this address for fetch <form action="#/guess/<%=animation.id%>?_method=PUT" method="PUT"></form> -->
             <div class="form-group center-element">
-              <button class="btn btn-sm btn-info guess-button">Guess!</button>
+              <button class="btn btn-sm btn-info guess-button" data-animationid="<%=animation.id%>">Guess!</button>
               <!-- <div class="my-1 guess-attempt-result">Uh oh you didnt guess</div> -->
               <input type="text" class="guess-input my-4 p-0" />
             </div>
           </div>
+          <% } %>
+          <% if (animation.hasGuessedTheAnimation) { %>
+            <a href="">See stats</a>
           <% } %>
           <div class="animation-description my-2"><%=animation.description%></div>
           <hr />
@@ -183,6 +186,7 @@
   </div>
 </div>
 
+<script src="/guess.js"></script>
 <script src="/notification.js"></script>
 <script src="/ratePost.js"></script>
 <script src="/imageLoad.js"></script>

@@ -4,6 +4,7 @@ const router = express.Router();
 // const mongoose = require('mongoose');
 const Category = require('../models/Category.js');
 const Animation = require('../models/Animation.js');
+const Guess = require('../models/Guess.js');
 
 router.use(express.json({
     type: ['application/json', 'text/plain'],
@@ -26,6 +27,18 @@ router.get('/animations', middleware.sessionLocals, async (req, res) => {
         return res.redirect('/animations?page=1');
     } else {
         page = parseInt(req.query.page);
+    }
+
+    //checking which animations user has guessed and which they did not
+    const handleUserGuessStatus = async (animation) => {
+        if (req.user) {
+            const guess = await Guess.findOne({ animationId: animation._id, guesserId: req.user._id });
+            if (guess && guess.finished) {
+                return true;
+            }
+            return false;
+        }
+        return false;
     }
 
     const countAnimations = await Animation.find({ isDraft: false }).countDocuments();
@@ -88,7 +101,8 @@ router.get('/animations', middleware.sessionLocals, async (req, res) => {
             likes: likes,
             disliked: disliked,
             liked: liked,
-            needsGuessing: animation.needsGuessing
+            needsGuessing: animation.needsGuessing,
+            hasGuessedTheAnimation: await handleUserGuessStatus(animation)
         }
         dataToSend.push(data);
     }
@@ -121,7 +135,7 @@ router.get('/animations/:id', middleware.loginRequired, middleware.animationBelo
 });
 
 router.put('/animations/:id', middleware.loginRequired, middleware.animationBelongsToUser, async (req, res) => {
-    
+
     console.log(req.body.needsGuessing);
 
     let foundAnimation;
@@ -261,10 +275,10 @@ router.put('/animations/:id', middleware.loginRequired, middleware.animationBelo
         handleColorsLimit(); // splice clipboard limit and color limit to handle the error better instead of removing everything;
     }
     trimReceivedParameters();
-    
+
     //updates necessary for draft version only
-    if (req.query.post != '1')  {  
-    console.log('hit');
+    if (req.query.post != '1') {
+        console.log('hit');
         Object.assign(foundAnimation, {
             frames: req.body.frames,
             coverFrame: req.body.thumbnail,
@@ -274,7 +288,7 @@ router.put('/animations/:id', middleware.loginRequired, middleware.animationBelo
             draftDate: new Date().getTime(),
             isFileHeavy: isHeavy(),
             needsGuessing: req.body.needsGuessing,
-            guessString: req.body.guessString || '',
+            guessString: req.body.guessString.toLowerCase() || '',
             congratulationsMessage: req.body.congratulationsMessage || '',
             allowedGuesses: req.body.allowedGuesses
         })
@@ -290,7 +304,7 @@ router.put('/animations/:id', middleware.loginRequired, middleware.animationBelo
             draftDate: new Date().getTime(),
             isFileHeavy: isHeavy(),
             needsGuessing: req.body.needsGuessing,
-            guessString: req.body.guessString || '',
+            guessString: req.body.guessString.toLowerCase() || '',
             congratulationsMessage: req.body.congratulationsMessage || '',
             allowedGuesses: req.body.allowedGuesses,
             isDraft: false,
@@ -353,7 +367,6 @@ router.get('/animations/view/:id', async (req, res) => {
         return res.redirect('/animations');
     }
 })
-
 
 router.get('/api/play/:id', async (req, res) => {
     try {
@@ -449,6 +462,113 @@ router.put('/api/rate/:id', async (req, res) => {
     }
 })
 
-router.use(middleware.sessionLocals)
+router.put('/api/guess/:id', async (req, res) => {
+
+    const guessInput = req.body.guessInput.replace(/[ ]/g, '').toLowerCase();
+
+    try {
+        let foundAnimation = await Animation.findById(req.params.id);
+        const maxAttempts = foundAnimation.allowedGuesses;
+        let usedAttempts;
+        let leftAttempts;
+
+        let foundGuess = await Guess.findOne({ animationId: req.params.id, guesserId: req.user._id });
+        if (!foundGuess) {
+            foundGuess = new Guess({
+                guesserId: req.user._id,
+                animationId: req.params.id,
+                usedAttempts: 0,
+                hasWon: false,
+                finished: false
+            })
+        }
+
+        const useAttempt = () => {
+            foundGuess.usedAttempts += 1;
+            usedAttempts = foundGuess.usedAttempts;
+            leftAttempts = maxAttempts - usedAttempts;
+        }
+
+        const hasAlreadyGuessed = () => {
+            return foundGuess.finished ? true : false;
+        }
+
+        const hasGuessed = () => {
+            return guessInput == foundAnimation.guessString;
+        }
+
+        const gatherStatistics = async () => {
+            const allGuesses = await Guess.find({ animationId: foundAnimation._id });
+            let stats = {
+                totalPeopleWon: 0,
+                totalPeopleLost: 0,
+                totalAttemptsWon: 0,
+                totalAttemptsLost: 0
+            }
+            for (guess of allGuesses) {
+                console.log(guess);
+                if (guess.hasWon) {
+                    stats.totalPeopleWon += 1;                                 //IMPORTANT. move raw data for calculations to the front end
+                    stats.totalAttemptsWon += guess.usedAttempts;
+                } else if (!guess.hasWon && guess.finished) {
+                    stats.totalPeopleLost += 1;
+                    stats.totalAttemptsLost += guess.usedAttempts - 1;//-1 because last attempt (failure) is going to be 1 higher than all attempts
+                } else if (!guess.hasWon && !guess.finished) {
+                    stats.totalAttemptsLost += guess.usedAttempts - 1; 
+                }
+            }
+            return stats;
+        }
+
+        let stats = {};   //all stats go here;
+
+        if (!hasAlreadyGuessed()) {
+            useAttempt();
+            if (usedAttempts > maxAttempts) {
+                foundGuess.hasWon = false;
+                foundGuess.finished = true;
+                await foundGuess.save();
+                stats = await gatherStatistics();
+                return res.json({ guessStatus: 'fail', message: "you didn't guess, better luck next time", stats: stats });
+            }
+            if (hasGuessed()) {
+                foundGuess.hasWon = true;
+                foundGuess.finished = true;
+                await foundGuess.save();
+                stats = await gatherStatistics();
+                return res.json({
+                    guessStatus: 'success', 
+                    message: "you've guessed", 
+                    stats: stats
+                });
+            } else {
+                await foundGuess.save();
+                return res.json({
+                    guessStatus: 'continue',
+                    message: "try again", left: leftAttempts,
+                    maxAttempts: maxAttempts
+                });
+            }
+        } else {
+            if (foundGuess.hasWon) {
+                return res.json({
+                    guessStatus: 'completed',
+                    message: `You have already attempted to guess it, the secret word was ${foundAnimation.guessString}`,
+                    stats: stats
+                });
+            } else {
+                return res.json({
+                    guessStatus: 'completed',
+                    message: `You have tried to guess that but failed :(`,
+                    stats: stats
+                });
+            }
+        }
+
+    } catch (err) {
+        console.log(err);
+        return res.json({ message: "error" });
+    }
+})
 
 module.exports = router;

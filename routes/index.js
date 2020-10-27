@@ -38,7 +38,7 @@ router.get('/verify', (req, res) => {
                     console.log("error generating token");
                     res.redirect('/');
                 } else {
-                    const url = `http://192.168.0.107:8080/confirmation/${token}`
+                    const url = `http://${process.env.HOST}:${process.env.PORT}/confirmation/${token}`
                     transporter.sendMail({
                         from: "aniguessr@gmail.com",
                         to: email,
@@ -195,7 +195,7 @@ router.post('/recovery', async (req, res) => {
                         console.log("error generating token");
                         return res.redirect('/');
                     } else {
-                        const url = `http://localhost:5500/setpassword/${token}`
+                        const url = `http://${process.env.HOST}:${process.env.PORT}/setpassword/${token}`
                         transporter.sendMail({
                             from: "aniguessr@gmail.com",
                             to: email,
