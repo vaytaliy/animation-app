@@ -28,7 +28,7 @@ router.get('/animations', middleware.sessionLocals, async (req, res) => {
         page = parseInt(req.query.page);
     }
 
-    const countAnimations = await Animation.find({}).countDocuments();
+    const countAnimations = await Animation.find({ isDraft: false }).countDocuments();
 
     let lastPage = Math.ceil(countAnimations / limit);
     let previousButtonState = '';
@@ -55,7 +55,7 @@ router.get('/animations', middleware.sessionLocals, async (req, res) => {
 
     const startQuery = limit * page - limit;
 
-    const allAnimations = await Animation.find({}).sort({ draftDate: -1 }).skip(startQuery).limit(limit);
+    const allAnimations = await Animation.find({ isDraft: false }).sort({ draftDate: -1 }).skip(startQuery).limit(limit);
     let dataToSend = [];
     for (let animation of allAnimations) {
         let category = await Category.findById(animation.category);
@@ -87,7 +87,8 @@ router.get('/animations', middleware.sessionLocals, async (req, res) => {
             category: category,
             likes: likes,
             disliked: disliked,
-            liked: liked
+            liked: liked,
+            needsGuessing: animation.needsGuessing
         }
         dataToSend.push(data);
     }
@@ -110,6 +111,7 @@ router.get('/animations/:id', middleware.loginRequired, middleware.animationBelo
     try {
         const foundAnimation = await Animation.findById(req.params.id);
         const stringified = JSON.stringify(foundAnimation);
+        console.log(foundAnimation);
         return res.render('./animations/draw.ejs', { animation: stringified });
     } catch (err) {
         console.log(err.message)
@@ -119,9 +121,8 @@ router.get('/animations/:id', middleware.loginRequired, middleware.animationBelo
 });
 
 router.put('/animations/:id', middleware.loginRequired, middleware.animationBelongsToUser, async (req, res) => {
-    console.log("current user" + req.user + ":" + req.userId);
-    console.log("hit correctly")
-
+    
+    console.log(req.body.needsGuessing);
 
     let foundAnimation;
     try {
@@ -142,9 +143,13 @@ router.put('/animations/:id', middleware.loginRequired, middleware.animationBelo
         CLIPBOARD_MAX: 20,
         MAX_SIZE_PREMIUM: 16,
         MAX_SIZE_STANDARD: 8,
+        MAX_CONGRATS_LENGTH: 100,
+        MAX_GUESSES: 15,
+        MIN_GUESSES: 0,
         HEAVY_FILE_MB: 5,
         VALID_COLOR_HEX: /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})/,
-        GUESS_STRING_RULE: /\w{1,50}/g
+        GUESS_STRING_RULE: /\w{1,50}/g,
+        CONGRATS_STRING_RULE: /\w/g
     }
 
     const frames = req.body.frames;
@@ -168,13 +173,36 @@ router.put('/animations/:id', middleware.loginRequired, middleware.animationBelo
         return totalDrawingSize > UPLOAD_RULES.HEAVY_FILE_MB ? true : false;
     }
 
-    const goodGuessString = () => {
-        if (req.body.guessString) {
-            if (req.body.guessString.match(UPLOAD_RULES.GUESS_STRING_RULE)[0]) {
-                return true;
-            }
+    const longCongrats = () => {
+        if (req.body.needsGuessing) {
+            return req.body.congratulationsMessage && req.body.congratulationsMessage.length > UPLOAD_RULES.MAX_CONGRATS_LENGTH ? true : false;
         }
         return false;
+    }
+
+    const goodCongratsString = () => {
+        let congratsMsg = req.body.congratulationsMessage;
+        return congratsMsg.match(UPLOAD_RULES.CONGRATS_STRING_RULE) &&
+            congratsMsg == congratsMsg.match(UPLOAD_RULES.CONGRATS_STRING_RULE)[0] ? true : false;
+    }
+
+    const goodGuessString = () => {
+        let guessWord = req.body.guessString;
+        if (guessWord && guessWord.length != 0 && req.body.needsGuessing) {
+            if (guessWord.match(UPLOAD_RULES.GUESS_STRING_RULE) &&
+                guessWord == guessWord.match(UPLOAD_RULES.GUESS_STRING_RULE)[0]) {
+                return true;
+            }
+            return false;
+        }
+        return true;
+    }
+
+    const goodGuessesNumber = () => {
+        if (req.body.needsGuessing) {
+            return parseInt(req.body.allowedGuesses) > UPLOAD_RULES.MAX_GUESSES ? false : true;
+        }
+        return true;
     }
 
     const goodColorHex = () => {
@@ -217,8 +245,8 @@ router.put('/animations/:id', middleware.loginRequired, middleware.animationBelo
     if (!isValidFileSize) {
         return res.json({ message: `Error saving. The animation is too big ${totalDrawingSize} Mb`, type: 'error' });
     }
-    if (!goodGuessString) {
-        return res.json({ message: `Error saving. The guess word is too long/short/contains illegal symbols`, type: 'error' });
+    if (longCongrats() || !goodGuessesNumber() || !goodGuessString()) {
+        return res.json({ message: `Error saving. One of inputs is too long/short/contains illegal symbols`, type: 'error' });
     }
     if (!hasMoreThanOneFrame) {
         return res.json({ message: 'Failed saving draft. Please create more than 1 frame', type: 'error' });
@@ -233,23 +261,40 @@ router.put('/animations/:id', middleware.loginRequired, middleware.animationBelo
         handleColorsLimit(); // splice clipboard limit and color limit to handle the error better instead of removing everything;
     }
     trimReceivedParameters();
+    
     //updates necessary for draft version only
+    if (req.query.post != '1')  {  
+    console.log('hit');
         Object.assign(foundAnimation, {
             frames: req.body.frames,
             coverFrame: req.body.thumbnail,
             playSpeed: req.body.playSpeed,
             clipboard: clipboard,
             colorCollections: colorCollections,
-            draftDate: new Date().getTime()
+            draftDate: new Date().getTime(),
+            isFileHeavy: isHeavy(),
+            needsGuessing: req.body.needsGuessing,
+            guessString: req.body.guessString || '',
+            congratulationsMessage: req.body.congratulationsMessage || '',
+            allowedGuesses: req.body.allowedGuesses
         })
-    foundAnimation.save();
+        foundAnimation.save();
+    }
     if (req.query && req.query.post && req.query.post == '1') {
         Object.assign(foundAnimation, {
-            isDraft: false,
-            postDate: new Date().getTime(),
+            frames: req.body.frames,
+            coverFrame: req.body.thumbnail,
+            playSpeed: req.body.playSpeed,
+            clipboard: clipboard,
+            colorCollections: colorCollections,
+            draftDate: new Date().getTime(),
             isFileHeavy: isHeavy(),
-            needsGuessing: req.body.needsGuessing || false,
-            guessString: req.body.guessString || ''
+            needsGuessing: req.body.needsGuessing,
+            guessString: req.body.guessString || '',
+            congratulationsMessage: req.body.congratulationsMessage || '',
+            allowedGuesses: req.body.allowedGuesses,
+            isDraft: false,
+            postDate: new Date().getTime()
         })
         foundAnimation.save();
         try {
@@ -273,7 +318,6 @@ router.post('/animations/new', middleware.loginRequired, async (req, res) => {
         createdDraft.creator.name = req.user.username;
         // createdDraft.category.name = foundCategory.name;
         createdDraft.category = foundCategory._id;
-        console.log(createdDraft);
         const date = new Date();
         const currentDate = date.getTime();
         createdDraft.draftDate = currentDate;

@@ -41,6 +41,7 @@
           </div>
         </div>
           <hr />
+          <% if (animation.needsGuessing) { %>
           <div class="guessForm">
             <!--Use this address for fetch <form action="#/guess/<%=animation.id%>?_method=PUT" method="PUT"></form> -->
             <div class="form-group center-element">
@@ -49,6 +50,7 @@
               <input type="text" class="guess-input my-4 p-0" />
             </div>
           </div>
+          <% } %>
           <div class="animation-description my-2"><%=animation.description%></div>
           <hr />
           <div class="d-flex flex-row justify-content-between align-items-center">

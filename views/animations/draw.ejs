@@ -23,7 +23,7 @@
         >
       </div>
       <div class="col-lg-3">
-        <button class="btn btn-sm btn-success">Post</button>
+        <button class="btn btn-sm btn-success" data-save-post>Post</button>
       </div>
       <div class="modal-window p-3" id="modalGlobal">
         <button data-close-modal class="close-icon">&times;</button>
@@ -46,12 +46,28 @@
             </div>
           </div>
           <div class="form-group">
-            <label for="">Secret word</label>
+            <label for="">Secret word (without spaces)</label>
             <input type="text" id="secretWord" class="form-control" />
+            <div class="invalid-feedback"></div>
           </div>
           <div class="form-group">
-            <label for="">Guess attempts</label>
-            <input type="text" id="maxGuessAttempts" class="form-control" />
+            <select class="custom-select" name="" id="maxGuessAttempts">
+              <option value="1">1</option>
+              <option value="2">2</option>
+              <option value="3">3</option>
+              <option value="4">4</option>
+              <option value="5">5</option>
+              <option value="6">6</option>
+              <option value="7">7</option>
+              <option value="8">8</option>
+              <option value="9">9</option>
+              <option value="10">10</option>
+              <option value="11">11</option>
+              <option value="12">12</option>
+              <option value="13">13</option>
+              <option value="14">14</option>
+              <option value="15">15</option>
+            </select>
           </div>
           <div class="form-group">
             <label for="">Secret congratulation message</label>
@@ -60,6 +76,7 @@
               id="congratulationMessage"
               class="form-control"
             />
+            <div class="invalid-feedback"></div>
           </div>
         </div>
         <div class="d-flex align-items-start flex-wrap">
@@ -67,7 +84,7 @@
           <button id="saveDraftClose" class="btn btn-info" data-close-modal data-save-draft>
             Save draft and close
           </button>
-          <button id="saveAndPost" class="btn btn-success" data-close-modal>Save and post!</button>
+          <button id="saveAndPost" class="btn btn-success" data-close-modal data-save-post>Save and post!</button>
         </div>
       </div>
       <div id="overlay"></div>

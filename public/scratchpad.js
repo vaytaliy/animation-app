@@ -24,11 +24,15 @@ function init() {
         backgroundColor: DEFAULT_BACKGROUND_COLOR,
         colorCollections: animation.colorCollections,
         frames: animation.frames,
+        congratulationsMessage: animation.congratulationsMessage,
+        guessString: animation.guessString,
+        needsGuessing: animation.needsGuessing,
+        allowedGuesses: animation.allowedGuesses,
         clipboard: animation.clipboard,
         history: [],
         size: 0
     }
-
+    console.log(drawing);
     function putOriginalIntoHistory() {
 
         for (let i = 0; i < drawing.frames.length; i++) {
@@ -100,14 +104,6 @@ function init() {
     handlePlaybackSpeed()
 
     //submits frames to the server
-    let canSave = true;
-    const saveDraftButtons = document.querySelectorAll("[data-save-draft]");
-
-    saveDraftButtons.forEach(button => {
-        if (canSave) {
-            button.addEventListener('mouseup', saveEverything)
-        }
-    })
 
 
 
@@ -644,22 +640,256 @@ function init() {
         }
     })
 
-    async function saveEverything() {
+    //Elements of global modal
 
+    const congratulationMessage = document.getElementById('congratulationMessage')
+    const maxGuessAttempts = document.getElementById('maxGuessAttempts');
+    const mustBeGuessed = document.getElementById('mustBeGuessed');
+    const secretWord = document.getElementById('secretWord');
+
+    congratulationMessage.value = drawing.congratulationsMessage || '';
+    maxGuessAttempts.value = drawing.allowedGuesses;
+    mustBeGuessed.checked = animation.needsGuessing;
+
+    
+
+    mustBeGuessed.addEventListener('change', () => {
+        mustBeGuessedIsChecked();
+    })
+
+    secretWord.value = drawing.guessString || '';
+
+    //validations
+
+    const CONSTRAINTS = {
+        SECRET_WORD_REGEX: /\w{1,50}/g,
+        CONGRATULATION_REGEX: /\w/g,
+        MAX_CONGRATULATION_LENGTH: 100,
+        MIN_SECRET_WORD_LENGTH: 1,
+        MAX_SECRET_WORD_LENGTH: 50,
+        MAX_GUESS_COUNT: 15,
+        MIN_GUESS_COUNT: 0
+    }
+
+    const secretWordGoodLength = () => {
+        let secretValueLength = parseInt(secretWord.value.length);
+        return secretValueLength > CONSTRAINTS.MAX_SECRET_WORD_LENGTH || secretValueLength < CONSTRAINTS.MIN_SECRET_WORD_LENGTH ? false : true;
+    }
+
+    const congratulationGoodLength = () => {
+        let congratsMessageLength = parseInt(congratulationMessage.value.length);
+        return congratsMessageLength > CONSTRAINTS.MAX_CONGRATULATION_LENGTH ? false : true;
+    }
+
+    const secretWordIsGood = () => {
+        return secretWord.value.match(CONSTRAINTS.SECRET_WORD_REGEX) && secretWord.value.match(CONSTRAINTS.SECRET_WORD_REGEX)[0] == secretWord.value ? true : false;
+    }
+
+    const congratulationIsGood = () => {
+        if (congratulationMessage.value) {
+            return congratulationMessage.value.match(CONSTRAINTS.SECRET_WORD_REGEX)[0] ? true : false;
+        }
+        return true;
+    }
+
+    const goodMaxGuesses = () => {
+        let maxGuesses = parseInt(maxGuessAttempts.value);
+        return maxGuesses > CONSTRAINTS.MAX_GUESS_COUNT || maxGuesses < CONSTRAINTS.MIN_GUESS_COUNT ? false : true;
+    }
+
+    let errors = [];
+
+    secretWord.addEventListener('keyup', () => {
+        if (mustBeGuessed.checked) {
+            secretWordGoodLength()
+            secretWordIsGood();
+        }
+    })
+
+    const validateCongratulations = () => {
+        let errorPosition = checkErrorExists('congrats');
+        if (mustBeGuessed.checked) {
+            if (!congratulationGoodLength()) {
+                setNewErrorMessage(congratulationMessage, 'Must be max 100 in length');
+                appendError('congrats');
+                displayErrors([congratulationMessage]);
+                return;
+            }
+            // if (!congratulationIsGood()) {
+            //     setNewErrorMessage(congratulationMessage, 'Contains illegal symbols');
+            //     appendError('congrats');
+            //     displayErrors([congratulationMessage]);
+            //     return;
+            // }
+        }
+        removeError(errorPosition, 'congrats');
+        hideErrors([congratulationMessage]);
+        return;
+    }
+
+    const validateGuess = () => {
+        let errorPosition = checkErrorExists('secret');
+        if (mustBeGuessed.checked) {
+            if (secretWord.value.length == 0) {
+                setNewErrorMessage(secretWord, 'Can not be empty');
+                appendError('secret');
+                displayErrors([secretWord]);
+                return;
+            }
+            if (!secretWordGoodLength()) {
+                setNewErrorMessage(secretWord, 'Must be 1-50 in length');
+                appendError('secret');
+                displayErrors([secretWord]);
+                return;
+            }
+            if (!secretWordIsGood()) {
+                setNewErrorMessage(secretWord, 'Contains illegal symbols');
+                appendError('secret');
+                displayErrors([secretWord]);
+                return;
+            }
+        }
+        removeError(errorPosition, 'secret');
+        hideErrors([secretWord]);
+        return;
+    }
+
+    congratulationMessage.addEventListener('keyup', () => {
+        drawing.congratulationsMessage = congratulationMessage.value;
+        validateCongratulations();
+    })
+
+    secretWord.addEventListener('keyup', () => {
+        drawing.guessString = secretWord.value;
+        validateGuess()
+    })
+
+    maxGuessAttempts.addEventListener('change', () => {
+        let errorPosition = checkErrorExists('guesses');
+        drawing.allowedGuesses = maxGuessAttempts.value;
+        console.log(drawing.allowedGuesses);
+        if (mustBeGuessed.checked) {
+            if (!goodMaxGuesses()) {
+                appendError('guesses');
+                return;
+            }
+        }
+        removeError(errorPosition, 'guesses');
+    })
+
+    const setNewErrorMessage = (inputNode, newMessage) => {
+        if (inputNode) {
+            inputNode.parentElement.querySelector('.invalid-feedback').innerText = newMessage;
+        }
+    }
+
+    const hideErrors = (targetedInputs) => {
+        targetedInputs.forEach(input => {
+            input.classList.remove('is-invalid');
+            input.classList.add('is-valid');
+        })
+    }
+
+    const displayErrors = (targetedInputs) => {
+        targetedInputs.forEach(input => {
+            input.classList.remove('is-valid');
+            input.classList.add('is-invalid');
+        })
+    }
+
+    const checkErrorExists = (searchedError) => {
+        return errors.indexOf(searchedError) != -1 ? errors.indexOf(searchedError)
+            : -1
+    }
+
+    const removeError = (indexPosition, errorName) => {
+        if (errors[indexPosition] == errorName && indexPosition != -1) {
+            errors.splice(indexPosition, 1);
+        }
+    }
+
+    const appendError = (errorName) => {
+        let errIndex = checkErrorExists(errorName);
+        if (errIndex == -1) {
+            errors.push(errorName);
+        }
+    }
+
+    
+
+    let canSave = true;
+    const saveDraftButtons = document.querySelectorAll("[data-save-draft]");
+    const savePostButtons = document.querySelectorAll("[data-save-post]");
+
+    saveDraftButtons.forEach(button => {
+        if (canSave) {
+            if (errors.length == 0) {
+                button.addEventListener('mouseup', () => {
+                    saveEverything('/animations/' + animation._id);
+                })
+            } else {
+                button.stopPropagation();
+            }
+        }
+    })
+
+    savePostButtons.forEach(button => {
+        if (canSave) {
+            if (errors.length == 0) {
+                button.addEventListener('mouseup', () => {
+                    let link = '/animations/' + animation._id + '?post=1'
+                    saveEverything(link); //post = 1 tells backend this is not draft version to be saved
+                })
+            } else {
+                button.stopPropagation();
+            }
+        }
+    })
+    function mustBeGuessedIsChecked() {
+
+        if (!mustBeGuessed.checked) {
+
+            drawing.needsGuessing = false;
+            console.log(drawing.needsGuessing);
+            maxGuessAttempts.disabled = true;
+            secretWord.disabled = true;
+            congratulationMessage.disabled = true;
+            errors = [];
+        } else {
+            drawing.needsGuessing = true;
+            console.log(drawing.needsGuessing);
+            maxGuessAttempts.disabled = false;
+            secretWord.disabled = false;
+            congratulationMessage.disabled = false;
+            validateCongratulations();
+            validateGuess();
+        }
+    }
+    mustBeGuessedIsChecked()
+    async function saveEverything(link) {
+        if (errors.length > 0) {
+            drawMessage('error', 'Please check fields before submitting');
+            return;
+        }
         //save click cooldown 
         if (drawing.frames.length > 0
             && canSave) {
             if (drawing.size <= 8) {
                 canSave = false;
+                console.log(drawing.needsGuessing);
                 let data = {
                     frames: drawing.frames,
                     thumbnail: drawing.frames[0],
                     clipboard: drawing.clipboard,
                     playSpeed: drawing.animationFrames,
-                    colorCollections: drawing.colorCollections
+                    colorCollections: drawing.colorCollections,
+                    guessString: drawing.guessString,
+                    allowedGuesses: drawing.allowedGuesses,
+                    needsGuessing: drawing.needsGuessing,
+                    congratulationsMessage: drawing.congratulationsMessage
                 }
                 try {
-                    let response = await fetch('/animations/' + animation._id, {
+                    let response = await fetch(link, {
                         method: 'PUT',
                         headers: {
                             'Content-Type': 'application/json',
@@ -672,7 +902,7 @@ function init() {
                         drawMessage(data.type, data.message);
                         setTimeout(() => {
                             canSave = true;
-                        }, 10000);
+                        }, 1000);
                     })
                 } catch (err) {
                     console.log(err.message)
@@ -695,12 +925,34 @@ function init() {
                 msgBox.classList.add('hidden');
             }, 3000)
         }
+
     }
+
+    //global settings menu
+    // let drawing = {
+    //     selectedColor: SELECTED_COLOR,
+    //     brushSize: BRUSH_SIZE,
+    //     moveEnabled: MOVE_ENABLED,
+    //     coverFrame: animation.coverFrame,
+    //     animationFrames: ANIMATION_FRAMES,
+    //     backgroundColor: DEFAULT_BACKGROUND_COLOR,
+    //     colorCollections: animation.colorCollections,
+    //     frames: animation.frames,
+    //     congratulationsMessage: animation.congratulationsMessage,
+    //     guessString: animation.guessString,
+    //     needsGuessing: animation.needsGuessing,
+    //     allowedGuesses: animation.allowedGuesses,
+    //     clipboard: animation.clipboard,
+    //     history: [],
+    //     size: 0
+    // }
 
     function handleModalGlobal() {
         const modalButtons = document.querySelectorAll('[data-modal-target]');
         const modalsClose = document.querySelectorAll('[data-close-modal]');
         const overlay = document.getElementById('overlay');
+
+
 
         modalButtons.forEach(button => {
             button.addEventListener('pointerup', () => {
@@ -718,6 +970,8 @@ function init() {
 
         function openModal(modal) {
             if (modal) {
+                validateCongratulations();
+                validateGuess();
                 modal.classList.add('active');
                 overlay.classList.add('active');
             }
