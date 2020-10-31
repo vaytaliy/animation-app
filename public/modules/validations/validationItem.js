@@ -38,6 +38,7 @@ class ValidationItem {
             mismatch: false,
             email: false
         };
+        this.hasError = false;
     }
 
     validateValueIsEmpty() {

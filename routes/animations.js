@@ -91,6 +91,7 @@ router.get('/animations', middleware.sessionLocals, async (req, res) => {
         }
         let data = {
             id: animation._id,
+            creatorId: animation.creator.id,
             speed: animation.playSpeed,
             thumbnail: animation.coverFrame,
             creator: animation.creator,
@@ -278,7 +279,6 @@ router.put('/animations/:id', middleware.loginRequired, middleware.animationBelo
 
     //updates necessary for draft version only
     if (req.query.post != '1') {
-        console.log('hit');
         Object.assign(foundAnimation, {
             frames: req.body.frames,
             coverFrame: req.body.thumbnail,
@@ -471,6 +471,15 @@ router.put('/api/guess/:id', async (req, res) => {
         const maxAttempts = foundAnimation.allowedGuesses;
         let usedAttempts;
         let leftAttempts;
+        
+        const belongsToThisUser = () => {
+            return foundAnimation.creator.id.toString() == req.user._id.toString() ? true : false;
+        }
+
+        // to fix this later
+        if (!req.user) {
+            return res.json({ guessStatus: 'loginfail', message: "You must be logged in to guess" });
+        }        
 
         let foundGuess = await Guess.findOne({ animationId: req.params.id, guesserId: req.user._id });
         if (!foundGuess) {
@@ -506,7 +515,6 @@ router.put('/api/guess/:id', async (req, res) => {
                 totalAttemptsLost: 0
             }
             for (guess of allGuesses) {
-                console.log(guess);
                 if (guess.hasWon) {
                     stats.totalPeopleWon += 1;                                 //IMPORTANT. move raw data for calculations to the front end
                     stats.totalAttemptsWon += guess.usedAttempts;
@@ -514,15 +522,18 @@ router.put('/api/guess/:id', async (req, res) => {
                     stats.totalPeopleLost += 1;
                     stats.totalAttemptsLost += guess.usedAttempts - 1;//-1 because last attempt (failure) is going to be 1 higher than all attempts
                 } else if (!guess.hasWon && !guess.finished) {
-                    stats.totalAttemptsLost += guess.usedAttempts - 1; 
+                    stats.totalAttemptsLost += guess.usedAttempts - 1;
                 }
             }
             return stats;
         }
 
         let stats = {};   //all stats go here;
-
+        
         if (!hasAlreadyGuessed()) {
+            if (belongsToThisUser()) {
+                return res.json({ guessStatus: 'fail', message: "You can't guess your own animation" });
+            }
             useAttempt();
             if (usedAttempts > maxAttempts) {
                 foundGuess.hasWon = false;
@@ -537,29 +548,28 @@ router.put('/api/guess/:id', async (req, res) => {
                 await foundGuess.save();
                 stats = await gatherStatistics();
                 return res.json({
-                    guessStatus: 'success', 
-                    message: "you've guessed", 
+                    guessStatus: 'success',
+                    message: "you've guessed",
                     stats: stats
                 });
             } else {
                 await foundGuess.save();
                 return res.json({
                     guessStatus: 'continue',
-                    message: "try again", left: leftAttempts,
-                    maxAttempts: maxAttempts
+                    message: `try again ${leftAttempts + 1} attempts left`
                 });
             }
         } else {
             if (foundGuess.hasWon) {
                 return res.json({
                     guessStatus: 'completed',
-                    message: `You have already attempted to guess it, the secret word was ${foundAnimation.guessString}`,
+                    message: `You have already attempted to guess it, the secret was ${foundAnimation.guessString}`,
                     stats: stats
                 });
             } else {
                 return res.json({
                     guessStatus: 'completed',
-                    message: `You have tried to guess that but failed :(`,
+                    message: `You have tried to guess that but failed :(. The secret was "${foundAnimation.guessString}"`,
                     stats: stats
                 });
             }
@@ -567,7 +577,7 @@ router.put('/api/guess/:id', async (req, res) => {
 
     } catch (err) {
         console.log(err);
-        return res.json({ message: "error" });
+        return res.json({ guessStatus: 'error', message: "error" });
     }
 })
 

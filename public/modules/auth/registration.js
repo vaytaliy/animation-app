@@ -1,8 +1,18 @@
 import ValidationItem from "./../validations/validationItem.js";
-import { checkItem, checkRegExp, initChecker, emailValidator, passwordValidator } from "./../validations/validator.js"
-import { handleDisplayedErrors } from "./../validations/validationDisplayer.js"
+import { checkers } from "./../validations/validator.js"
+import { handleDisplayedErrors, 
+    checkLimits, 
+    checkRegExp, 
+    checkEmail, 
+    compareField2against1, 
+    checkBeforeFormTrigger,
+    checkBeforeButtonPress } from "./../validations/validationDisplayer.js"
 
 const REG = (function () {
+
+    //currently existing types of inputs: normal (can )
+
+    const form = document.getElementById('registrationForm');
 
     const data = [
         {
@@ -11,7 +21,7 @@ const REG = (function () {
             data: new ValidationItem(
                 {
                     validationName: 'Username',
-                    itemValue: 'g',
+                    itemValue: '',
                     itemType: 'string',
                     canBeEmpty: false,
                     minValue: 3,
@@ -63,33 +73,38 @@ const REG = (function () {
         }
     ]
 
-//"checkItem" function is a basic standardized validator for any kind of input fields
+
+    const checkForm = (dataElement) => {
+        checkers.initChecker(dataElement.data)
+        switch (dataElement.data.validationName) {
+            case 'Username':
+                checkLimits(dataElement.data);
+                checkRegExp(dataElement.data);
+                break;
+            case 'Email':
+                checkLimits(dataElement.data);
+                checkEmail(dataElement);
+                break;
+            case 'Password1':
+                checkLimits(dataElement.data);
+                break;
+            case 'Password2':
+                checkLimits(dataElement.data);
+                compareField2against1(dataElement.data, data[2].data);
+                break;
+        }
+    }
+
+     checkBeforeFormTrigger(data, form)
 
     data.forEach(dataElement => {
         dataElement.field.addEventListener('keyup', (e) => {
-            initChecker(dataElement.data)
             dataElement.data.itemValue = e.target.value;
-            let validationItemData = dataElement.data;
-            switch (validationItemData.validationName) {
-                case 'Username':
-                    checkItem(validationItemData);
-                    checkRegExp(validationItemData);
-                    break;
-                case 'Email':
-                    emailValidator(validationItemData, dataElement.field);
-                    break;
-                case 'Password1':
-                    checkItem(validationItemData);
-                    break;
-                case 'Password2':
-                console.log(validationItemData + ":" + data[2].data)    
-                passwordValidator(validationItemData, data[2].data);
-                break;
-            }
+            checkForm(dataElement);
             handleDisplayedErrors(dataElement);
         })
     })
 
-    return data;
+    return {};
 })()
 export default REG;

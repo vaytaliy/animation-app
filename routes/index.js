@@ -66,14 +66,14 @@ router.post('/register', middleware.passMismatch, async (req, res) => {
     const username = req.body.username;
     const password = req.body.password;
 
-    if (email.length < 1 && email.length > 150
-        && username.length < MIN_USER_LENGTH
-        && username.length > MAX_USER_LENGTH
-        && password.length < MIN_PASS_LENGTH
-        && password.length > MAX_PASS_LENGTH
-        && !username.match(usernameRule)
-        || (username.match(usernameRule)
-        && username != username.match(usernameRule).toString())) {
+    if (email.length < 1 || email.length > 150
+        || username.length < MIN_USER_LENGTH
+        || username.length > MAX_USER_LENGTH
+        || password.length < MIN_PASS_LENGTH
+        || password.length > MAX_PASS_LENGTH
+        || !username.match(usernameRule)
+        || ((username.match(usernameRule)
+        && username != username.match(usernameRule).toString()))) {
             req.flash('error', 'Incorrect data passed for registration');
             res.redirect('back');
     }

@@ -200,14 +200,27 @@ img {
 }
 
 .guess-attempt-result {
-  background-color: rgb(245, 170, 170);
   font-weight: 600;
+  height: 60px;
   text-align: center;
   border-style: solid;
   border-color: rgb(77, 76, 76);
   border-width: 1px;
   border-radius: 3px;
-  display: none;
+  opacity: 1;
+}
+
+.guess-attempt-result.fail {
+  background-color: rgb(245, 170, 170);
+}
+
+.guess-attempt-result.success {
+  background-color: rgb(173, 245, 170);
+}
+
+.guess-attempt-result.hide {
+  opacity: 0;
+  transition: 300ms ease-in-out;
 }
 
 .guess-button {
