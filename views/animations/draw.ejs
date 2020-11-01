@@ -189,10 +189,14 @@
     <input type="hidden" id="hiddenData" name="hidden" />
   </form>
 
+
   <input id="animationData" type="hidden" value="<%=animation%>" />
-  <script src="/modal.js"></script>
+  <script src="/modules/drawing/validationLogic.js" type="module"></script>
+  <script src="/modules/drawing/save.js" type="module"></script>
+  <script src="/notification.js"></script>
+  <script src="/modules/drawing/modal.js" type="module"></script>
   <script src="/irojs-master/iro.min.js"></script>
-  <script src="/scratchpad.js"></script>
+  <script src="/scratchpad.js" type="module"></script>
 
   <%- include("../partials/footer") %>
 </body>

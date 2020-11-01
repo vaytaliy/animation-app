@@ -94,7 +94,8 @@ let checkers = {
     checkRegExp,
     emailValidator,
     passwordValidator,
-    initChecker
+    initChecker,
+    resetErrors
 }
 
 export { checkers };

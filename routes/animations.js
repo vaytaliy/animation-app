@@ -122,11 +122,12 @@ router.get('/animations/new', middleware.loginRequired, async (req, res) => {
     }
 });
 
-router.get('/animations/:id', middleware.loginRequired, middleware.animationBelongsToUser, async (req, res) => {
+//,
+
+router.get('/animations/:id',  middleware.loginRequired, middleware.animationBelongsToUser, async (req, res) => {
     try {
         const foundAnimation = await Animation.findById(req.params.id);
         const stringified = JSON.stringify(foundAnimation);
-        console.log(foundAnimation);
         return res.render('./animations/draw.ejs', { animation: stringified });
     } catch (err) {
         console.log(err.message)
@@ -136,8 +137,6 @@ router.get('/animations/:id', middleware.loginRequired, middleware.animationBelo
 });
 
 router.put('/animations/:id', middleware.loginRequired, middleware.animationBelongsToUser, async (req, res) => {
-
-    console.log(req.body.needsGuessing);
 
     let foundAnimation;
     try {
@@ -193,12 +192,6 @@ router.put('/animations/:id', middleware.loginRequired, middleware.animationBelo
             return req.body.congratulationsMessage && req.body.congratulationsMessage.length > UPLOAD_RULES.MAX_CONGRATS_LENGTH ? true : false;
         }
         return false;
-    }
-
-    const goodCongratsString = () => {
-        let congratsMsg = req.body.congratulationsMessage;
-        return congratsMsg.match(UPLOAD_RULES.CONGRATS_STRING_RULE) &&
-            congratsMsg == congratsMsg.match(UPLOAD_RULES.CONGRATS_STRING_RULE)[0] ? true : false;
     }
 
     const goodGuessString = () => {

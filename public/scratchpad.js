@@ -1,9 +1,7 @@
-//Default constants
-// let animation = <%=animation%>
-
+//todo: fix damn mess
 
 //Initializing everything
-function init() {
+const SCRATCHPAD = (function () {
     const animationData = document.getElementById("animationData").value;
     const animation = JSON.parse(animationData);
     const originalFrames = animation.frames;
@@ -32,7 +30,7 @@ function init() {
         history: [],
         size: 0
     }
-    console.log(drawing);
+
     function putOriginalIntoHistory() {
 
         for (let i = 0; i < drawing.frames.length; i++) {
@@ -189,7 +187,7 @@ function init() {
         function renderImage(currentFrame) {
             ctx.fillStyle = 'white';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
-            image = new Image();
+            let image = new Image();
             image.src = currentFrame;
             image.onload = () => {
                 ctx.globalAlpha = 1
@@ -258,7 +256,7 @@ function init() {
 
 
                 chosenFrame = parseInt(frameInput.value)
-                currentFrame = drawing.frames[chosenFrame - 1]
+                let currentFrame = drawing.frames[chosenFrame - 1]
 
 
                 if (currentFrame) {
@@ -297,7 +295,7 @@ function init() {
                 frameInput.value -= 1
 
                 chosenFrame = parseInt(frameInput.value)
-                currentFrame = drawing.frames[chosenFrame - 1]
+                let currentFrame = drawing.frames[chosenFrame - 1]
                 initPlaybackSlider()
                 if (currentFrame) {
 
@@ -320,7 +318,7 @@ function init() {
 
         function initPlaybackSlider() {
 
-            chosenFrame = parseInt(document.getElementById("frameSelector").value)
+            let chosenFrame = parseInt(document.getElementById("frameSelector").value)
             let animationPlaybackSlider = document.getElementById('animationPlaybackSlider');
             animationPlaybackSlider.value = chosenFrame;
         }
@@ -455,7 +453,7 @@ function init() {
 
                 copyFrame.addEventListener('pointerup', (e) => {
                     if (drawing.frames[chosenFrame - 1] && drawing.clipboard.length <= 20) {
-                        console.log(chosenFrame);
+
                         drawing.clipboard.push(drawing.frames[chosenFrame - 1]);
                         drawClipboard.innerHTML = '';
                         for (let i = 0; i < drawing.clipboard.length; i++) {
@@ -481,7 +479,7 @@ function init() {
                     let chosenFrame = parseInt(document.getElementById("frameSelector").value);
                     let historyData = drawing.history[chosenFrame - 1].histData
                     let currentEntryPoint = drawing.history[chosenFrame - 1].entryPoint
-                    console.log(currentEntryPoint);
+
                     if (historyData.length != 0 && currentEntryPoint > 0) {
                         drawing.frames[chosenFrame - 1] = drawing.history[chosenFrame - 1].histData[currentEntryPoint - 1]
                         drawing.history[chosenFrame - 1].entryPoint -= 1
@@ -607,7 +605,6 @@ function init() {
                             }
                             document.getElementById('frameSelector').value = e.target.value
                             renderImage(drawing.frames[parseInt(e.target.value) - 1]);
-                            isRendered = true;
                             initialValue = e.target.value
                         }
                     }
@@ -640,23 +637,6 @@ function init() {
         }
     })
 
-    //Elements of global modal
-
-    const congratulationMessage = document.getElementById('congratulationMessage')
-    const maxGuessAttempts = document.getElementById('maxGuessAttempts');
-    const mustBeGuessed = document.getElementById('mustBeGuessed');
-    const secretWord = document.getElementById('secretWord');
-
-    congratulationMessage.value = drawing.congratulationsMessage || '';
-    maxGuessAttempts.value = drawing.allowedGuesses;
-    mustBeGuessed.checked = animation.needsGuessing;
-
-    
-
-    mustBeGuessed.addEventListener('change', () => {
-        mustBeGuessedIsChecked();
-    })
-
     secretWord.value = drawing.guessString || '';
 
     //validations
@@ -671,326 +651,9 @@ function init() {
         MIN_GUESS_COUNT: 0
     }
 
-    const secretWordGoodLength = () => {
-        let secretValueLength = parseInt(secretWord.value.length);
-        return secretValueLength > CONSTRAINTS.MAX_SECRET_WORD_LENGTH || secretValueLength < CONSTRAINTS.MIN_SECRET_WORD_LENGTH ? false : true;
-    }
+    return { drawing, animation }
+})()
 
-    const congratulationGoodLength = () => {
-        let congratsMessageLength = parseInt(congratulationMessage.value.length);
-        return congratsMessageLength > CONSTRAINTS.MAX_CONGRATULATION_LENGTH ? false : true;
-    }
-
-    const secretWordIsGood = () => {
-        return secretWord.value.match(CONSTRAINTS.SECRET_WORD_REGEX) && secretWord.value.match(CONSTRAINTS.SECRET_WORD_REGEX)[0] == secretWord.value ? true : false;
-    }
-
-    const congratulationIsGood = () => {
-        if (congratulationMessage.value) {
-            return congratulationMessage.value.match(CONSTRAINTS.SECRET_WORD_REGEX)[0] ? true : false;
-        }
-        return true;
-    }
-
-    const goodMaxGuesses = () => {
-        let maxGuesses = parseInt(maxGuessAttempts.value);
-        return maxGuesses > CONSTRAINTS.MAX_GUESS_COUNT || maxGuesses < CONSTRAINTS.MIN_GUESS_COUNT ? false : true;
-    }
-
-    let errors = [];
-
-    secretWord.addEventListener('keyup', () => {
-        if (mustBeGuessed.checked) {
-            secretWordGoodLength()
-            secretWordIsGood();
-        }
-    })
-
-    const validateCongratulations = () => {
-        let errorPosition = checkErrorExists('congrats');
-        if (mustBeGuessed.checked) {
-            if (!congratulationGoodLength()) {
-                setNewErrorMessage(congratulationMessage, 'Must be max 100 in length');
-                appendError('congrats');
-                displayErrors([congratulationMessage]);
-                return;
-            }
-            // if (!congratulationIsGood()) {
-            //     setNewErrorMessage(congratulationMessage, 'Contains illegal symbols');
-            //     appendError('congrats');
-            //     displayErrors([congratulationMessage]);
-            //     return;
-            // }
-        }
-        removeError(errorPosition, 'congrats');
-        hideErrors([congratulationMessage]);
-        return;
-    }
-
-    const validateGuess = () => {
-        let errorPosition = checkErrorExists('secret');
-        if (mustBeGuessed.checked) {
-            if (secretWord.value.length == 0) {
-                setNewErrorMessage(secretWord, 'Can not be empty');
-                appendError('secret');
-                displayErrors([secretWord]);
-                return;
-            }
-            if (!secretWordGoodLength()) {
-                setNewErrorMessage(secretWord, 'Must be 1-50 in length');
-                appendError('secret');
-                displayErrors([secretWord]);
-                return;
-            }
-            if (!secretWordIsGood()) {
-                setNewErrorMessage(secretWord, 'Contains illegal symbols');
-                appendError('secret');
-                displayErrors([secretWord]);
-                return;
-            }
-        }
-        removeError(errorPosition, 'secret');
-        hideErrors([secretWord]);
-        return;
-    }
-
-    congratulationMessage.addEventListener('keyup', () => {
-        drawing.congratulationsMessage = congratulationMessage.value;
-        validateCongratulations();
-    })
-
-    secretWord.addEventListener('keyup', () => {
-        drawing.guessString = secretWord.value;
-        validateGuess()
-    })
-
-    maxGuessAttempts.addEventListener('change', () => {
-        let errorPosition = checkErrorExists('guesses');
-        drawing.allowedGuesses = maxGuessAttempts.value;
-        console.log(drawing.allowedGuesses);
-        if (mustBeGuessed.checked) {
-            if (!goodMaxGuesses()) {
-                appendError('guesses');
-                return;
-            }
-        }
-        removeError(errorPosition, 'guesses');
-    })
-
-    const setNewErrorMessage = (inputNode, newMessage) => {
-        if (inputNode) {
-            inputNode.parentElement.querySelector('.invalid-feedback').innerText = newMessage;
-        }
-    }
-
-    const hideErrors = (targetedInputs) => {
-        targetedInputs.forEach(input => {
-            input.classList.remove('is-invalid');
-            input.classList.add('is-valid');
-        })
-    }
-
-    const displayErrors = (targetedInputs) => {
-        targetedInputs.forEach(input => {
-            input.classList.remove('is-valid');
-            input.classList.add('is-invalid');
-        })
-    }
-
-    const checkErrorExists = (searchedError) => {
-        return errors.indexOf(searchedError) != -1 ? errors.indexOf(searchedError)
-            : -1
-    }
-
-    const removeError = (indexPosition, errorName) => {
-        if (errors[indexPosition] == errorName && indexPosition != -1) {
-            errors.splice(indexPosition, 1);
-        }
-    }
-
-    const appendError = (errorName) => {
-        let errIndex = checkErrorExists(errorName);
-        if (errIndex == -1) {
-            errors.push(errorName);
-        }
-    }
-
-    
-
-    let canSave = true;
-    const saveDraftButtons = document.querySelectorAll("[data-save-draft]");
-    const savePostButtons = document.querySelectorAll("[data-save-post]");
-
-    saveDraftButtons.forEach(button => {
-        if (canSave) {
-            if (errors.length == 0) {
-                button.addEventListener('mouseup', () => {
-                    saveEverything('/animations/' + animation._id);
-                })
-            } else {
-                button.stopPropagation();
-            }
-        }
-    })
-
-    savePostButtons.forEach(button => {
-        if (canSave) {
-            if (errors.length == 0) {
-                button.addEventListener('mouseup', () => {
-                    let link = '/animations/' + animation._id + '?post=1'
-                    saveEverything(link); //post = 1 tells backend this is not draft version to be saved
-                })
-            } else {
-                button.stopPropagation();
-            }
-        }
-    })
-    function mustBeGuessedIsChecked() {
-
-        if (!mustBeGuessed.checked) {
-
-            drawing.needsGuessing = false;
-            console.log(drawing.needsGuessing);
-            maxGuessAttempts.disabled = true;
-            secretWord.disabled = true;
-            congratulationMessage.disabled = true;
-            errors = [];
-        } else {
-            drawing.needsGuessing = true;
-            console.log(drawing.needsGuessing);
-            maxGuessAttempts.disabled = false;
-            secretWord.disabled = false;
-            congratulationMessage.disabled = false;
-            validateCongratulations();
-            validateGuess();
-        }
-    }
-    mustBeGuessedIsChecked()
-    async function saveEverything(link) {
-        if (errors.length > 0) {
-            drawMessage('error', 'Please check fields before submitting');
-            return;
-        }
-        //save click cooldown 
-        if (drawing.frames.length > 0
-            && canSave) {
-            if (drawing.size <= 8) {
-                canSave = false;
-                console.log(drawing.needsGuessing);
-                let data = {
-                    frames: drawing.frames,
-                    thumbnail: drawing.frames[0],
-                    clipboard: drawing.clipboard,
-                    playSpeed: drawing.animationFrames,
-                    colorCollections: drawing.colorCollections,
-                    guessString: drawing.guessString,
-                    allowedGuesses: drawing.allowedGuesses,
-                    needsGuessing: drawing.needsGuessing,
-                    congratulationsMessage: drawing.congratulationsMessage
-                }
-                try {
-                    let response = await fetch(link, {
-                        method: 'PUT',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        redirect: 'follow',
-                        body: JSON.stringify(data),
-                    })
-                    console.log('yep')
-                    response.json().then(data => {
-                        drawMessage(data.type, data.message);
-                        setTimeout(() => {
-                            canSave = true;
-                        }, 1000);
-                    })
-                } catch (err) {
-                    console.log(err.message)
-                }
-            } else {
-                drawMessage('error', 'Not able to save due to heaviness of your file')
-            }
-        } else {
-            drawMessage('error', 'Wow slow down with the button mashing')
-        }
-
-        function drawMessage(type, message) {
-            let msgBox = document.getElementsByClassName('save-alert')[0];
-            msgBox.classList.remove('hidden');
-            msgBox.classList.remove('success');
-            msgBox.classList.remove('error');
-            msgBox.classList.add(type)
-            msgBox.innerText = message;
-            setTimeout(() => {
-                msgBox.classList.add('hidden');
-            }, 3000)
-        }
-
-    }
-
-    //global settings menu
-    // let drawing = {
-    //     selectedColor: SELECTED_COLOR,
-    //     brushSize: BRUSH_SIZE,
-    //     moveEnabled: MOVE_ENABLED,
-    //     coverFrame: animation.coverFrame,
-    //     animationFrames: ANIMATION_FRAMES,
-    //     backgroundColor: DEFAULT_BACKGROUND_COLOR,
-    //     colorCollections: animation.colorCollections,
-    //     frames: animation.frames,
-    //     congratulationsMessage: animation.congratulationsMessage,
-    //     guessString: animation.guessString,
-    //     needsGuessing: animation.needsGuessing,
-    //     allowedGuesses: animation.allowedGuesses,
-    //     clipboard: animation.clipboard,
-    //     history: [],
-    //     size: 0
-    // }
-
-    function handleModalGlobal() {
-        const modalButtons = document.querySelectorAll('[data-modal-target]');
-        const modalsClose = document.querySelectorAll('[data-close-modal]');
-        const overlay = document.getElementById('overlay');
-
-
-
-        modalButtons.forEach(button => {
-            button.addEventListener('pointerup', () => {
-                const modal = document.querySelector(button.dataset.modalTarget)
-                openModal(modal);
-            })
-        })
-
-        modalsClose.forEach(button => {
-            button.addEventListener('pointerup', () => {
-                const modal = button.closest('#modalGlobal');
-                closeModal(modal);
-            })
-        })
-
-        function openModal(modal) {
-            if (modal) {
-                validateCongratulations();
-                validateGuess();
-                modal.classList.add('active');
-                overlay.classList.add('active');
-            }
-        }
-
-        function closeModal(modal) {
-            if (modal) {
-                modal.classList.remove('active');
-                overlay.classList.remove('active');
-            }
-        }
-
-    }
-
-    handleModalGlobal();
-
-}
-
-init()
 
 function isCanvasContainerOverflown() {
     let canvas = document.getElementById("canvasContainer");
@@ -1011,3 +674,4 @@ window.addEventListener("beforeunload", function (e) {
     return confirmationMessage;
 });
 
+export default SCRATCHPAD;

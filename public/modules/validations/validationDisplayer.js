@@ -67,10 +67,14 @@ const checkBeforeButtonPress = (data, buttonHTMLElement) => {
     })
 }
 
-export { handleDisplayedErrors, 
-    checkLimits, 
-    checkRegExp, 
-    checkEmail, 
-    compareField2against1, 
+export {
+    handleDisplayedErrors,
+    checkLimits,
+    checkRegExp,
+    checkEmail,
+    compareField2against1,
     checkBeforeFormTrigger,
-    checkBeforeButtonPress }
+    checkBeforeButtonPress, 
+    checkAll,
+    anyErrorsExist
+}
