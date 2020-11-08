@@ -1,11 +1,10 @@
 const express = require('express');
-const middleware = require('../middleware/index.js');
 const router = express.Router();
 const Category = require('../models/Category.js');
 const Animation = require('../models/Animation.js');
 
 router.get('/profile/:id', async (req, res) => {
-
+    console.log(categories)
     let limit = 8;
     let page = parseInt(req.query.page);
 
@@ -21,7 +20,7 @@ router.get('/profile/:id', async (req, res) => {
         previousPage: page - 1
     }
 
-    let user = null;
+    let user = null; // assuming there is no user logged in user is not owner of the profile page
 
     if (req.user) {
         if (req.user._id == req.params.id) {
@@ -32,11 +31,22 @@ router.get('/profile/:id', async (req, res) => {
         const animations = await Animation.find({ 'creator.id': req.params.id }).sort({ draftDate: -1 }).skip(startQuery).limit(limit);
         let animationsData = [];
         for (let animation of animations) {
-            let foundCategory = await Category.findById(animation.category);
+            const findCategory = async () => {
+                let category = await Category.findById(animation.category);
+                if (!category) {
+                    category = new Category({
+                        name: "Other",
+                        bgColorHex: "#8ea8d1",
+                        fontColorHex: "#000000",
+                        emojiCode: "129335",
+                    });
+                }
+                return category;
+            };
             let animationData = {
                 name: animation.name,
                 animationId: animation._id,
-                category: foundCategory.name,
+                category: await findCategory(),
                 isFileHeavy: animation.isFileHeavy,
                 isDraft: animation.isDraft,
                 draftDate: animation.draftDate

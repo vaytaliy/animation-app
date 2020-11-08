@@ -24,7 +24,8 @@
                 <h4 class="card-title my-0"><%=animation.name%></h4> 
                 </a>   
             </div>
-            <div class="animation-category align-self-start m-1"><%=animation.category.name%></div>
+            <div class="animation-category align-self-start m-1" style="color:<%=animation.category.fontColorHex%>; background-color:<%=animation.category.bgColorHex%>">
+              <span>&#<%=animation.category.emojiCode%>;</span><%=animation.category.name%></div>
           </div>
           <div class="thumbnail-container">
           <img
@@ -43,7 +44,7 @@
           <hr />
           <% if ((animation.needsGuessing && user && user._id.toString() != animation.creatorId.toString()) || !user) { %>
           <div class="guessForm">
-            <!--Use this address for fetch <form action="#/guess/<%=animation.id%>?_method=PUT" method="PUT"></form> -->
+            <!-- Use this address for fetch <form action="#/guess/<%=animation.id%>?_method=PUT" method="PUT"></form> -->
             <div class="form-group center-element">
               <button class="btn btn-sm btn-info guess-button my-2" data-animationid="<%=animation.id%>">Guess!</button>
               <div class="my-1 guess-attempt-result hide">Uh oh you didnt guess</div>

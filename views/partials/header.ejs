@@ -2,7 +2,7 @@
 <html>
   <head>
     <title></title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta charset="UTF-8" />
     <meta
       http-equiv="Content-Security-Policy"
@@ -21,7 +21,11 @@
   </head>
   <body>
     <nav class="navbar sticky-top navbar-dark navbar-expand-lg">
-      <object data="/images/logo.svg" type="image/svg+xml" class="logo-main mr-2"></object>
+      <object
+        data="/images/logo.svg"
+        type="image/svg+xml"
+        class="logo-main mr-2"
+      ></object>
       <button
         class="navbar-toggler"
         type="button"
@@ -41,7 +45,23 @@
               >Home <span class="sr-only">(current)</span></a
             >
           </li>
-          
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+              Browse
+            </a>
+            <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+              <a class="dropdown-item" href="#">Official</a>
+              <a class="dropdown-item" href="#">Featured</a>
+              <div class="dropdown-divider"></div>
+              <!-- <a class="dropdown-item" href="#">Something else here</a> -->
+              <% if (categories) { %>
+                <% categories.forEach(category => {%>
+                  <a class="dropdown-item" href="#"><span class="mr-2">&#<%=category.emojiCode%>;</span><%=category.name%></a>
+                <% }) %>
+              <% } %>
+            </div>
+          </li>
+
           <% if (user) {%>
           <li class="nav-item">
             <a class="nav-link" href="/logout">Log out</a>
@@ -49,15 +69,14 @@
           <li class="nav-item">
             <a class="nav-link" href="/profile/<%=user._id%>">Profile</a>
           </li>
-          <% } %>
-          <% if (!user) {%>
+          <% } %> <% if (!user) {%>
           <li class="nav-item">
             <a class="nav-link" href="/register">Register</a>
           </li>
           <li class="nav-item">
             <a class="nav-link" href="/login">Log in</a>
           </li>
-          
+
           <% } %>
         </ul>
         <% if (user) {%>
@@ -67,8 +86,22 @@
           </li>
         </ul>
         <% } %>
-        <form action="/animations/new" method="GET">
-          <button class="btn btn-info" id="createAnimButton">Create animation!</button>
+        <form class="form-inline" action="/animations" method="GET" id="searchForm">
+          <div class="searchbtnloc">
+            <input
+              class="form-control mr-sm-2 searchAnim"
+              type="search"
+              placeholder="Search"
+              aria-label="Search"
+              name="searchParameter"
+            />
+            <button class="searchClick p-0" type="submit"><object class="searchbtn hidden"  data="/images/searchbutton.svg" type="image/svg+xml"></object></div>
+            </button>
+        </form>
+        <form class="form-inline" action="/animations/new" method="GET">
+          <button class="btn btn-info" id="createAnimButton">
+            Create animation!
+          </button>
         </form>
         <!-- <form class="form-inline my-2 my-lg-0">
           <input
@@ -83,4 +116,7 @@
         </form> -->
       </div>
     </nav>
-<script src="/navbarFader.js"></script>
+    <script src="/search.js"></script>
+    <script src="/navbarFader.js"></script>
+  </body>
+</html>

@@ -10,6 +10,9 @@ function initFader() {
         if (e.target && e.target.classList.contains('navbar-toggler')
             || e.target.classList.contains('navbar-toggler-icon')
             || e.target.classList.contains('nav-link')
+            || e.target.classList.contains('searchAnim')
+            || e.target.classList.contains('searchClick')
+            || e.target.nodeName == 'A'
             || e.target.nodeName == 'BUTTON') {
             navbarTogglerUsed = true;
         }

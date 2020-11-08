@@ -11,7 +11,7 @@ const cookieParser = require('cookie-parser');
 // const helmet = require("helmet");
 const flash = require('connect-flash');
 // const csurf = require('csurf');
-// const Category = require('./models/Category.js')
+const Category = require('./models/Category.js')
 
 // const myip = process.env.HOST
 // const myport = process.env.PORT
@@ -49,6 +49,13 @@ app.use((req, res, next) => {
     next();
 })
 
+const seedCategories = async () => {
+    let category;
+    category = new Category({name: "Actions", bgColorHex: "#e35459", fontColorHex: "#000000", emojiCode: "x1F3C3"});
+    await category.save();
+}
+//seedCategories();
+
 app.use(sessions({
     cookieName: "session",
     secret: process.env.PASSENC,
@@ -59,6 +66,7 @@ app.use(sessions({
 }));
 
 app.use(middleware.sessionLocals);
+app.use(middleware.findAllCategories);
 
 try {
     mongoose.connect("mongodb://localhost:27017/aniguessr", {

@@ -69,6 +69,10 @@ const DRAW_VALIDATIONS = (function () {
             )
         }
     ]
+
+    maxGuessAttempts.addEventListener('change', () => {
+        drawing.allowedGuesses = parseInt(maxGuessAttempts.value);
+    })
     
 
     const checkForm = (dataElement) => {

@@ -1,6 +1,7 @@
 let middlewareObj = {};
 const User = require('../models/User');
-const Animation = require('../models/Animation')
+const Animation = require('../models/Animation');
+const Category = require('../models/Category');
 
 middlewareObj.sessionLocals = async (req, res, next) => {
     if (!(req.session && req.session.userId)) {
@@ -38,6 +39,11 @@ middlewareObj.passMismatch = (req, res, next) => {
             return res.redirect('/register/?email=' + req.body.email + '&username=' + req.body.username);
         }
     }
+    next();
+}
+
+middlewareObj.findAllCategories = async(req, res, next) => {
+    res.locals.categories = await Category.find({});
     next();
 }
 

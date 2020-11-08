@@ -60,6 +60,5 @@
                 showErrorMessage(json, attemptResultMessageElement);
         }
     }
-
 }
 )()
